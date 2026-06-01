@@ -1,0 +1,125 @@
+= CloudBees workflow: Evaluate policies by context
+
+Use this reusable workflow to discover and evaluate all policies applicable to the current workflow context, and automatically route results to a manual approval flow when required.
+
+The workflow posts the current workflow context (component, run, SCM metadata, and optional checkpoint details) to the CloudBees Unify policy service, reconciles the results across all matching policies, and—if the result is `REQUEST_APPROVAL`—delegates to the CloudBees manual approval workflow before allowing the calling workflow to proceed.
+
+== Inputs
+
+[cols="2a,2a,2a,5a",options="header"]
+.Input details
+|===
+
+| Input name
+| Data type
+| Required?
+| Description
+
+| `input-data`
+| String
+| No
+| Inline JSON data to pass into the policy evaluation as additional context.
+
+| `input-file`
+| String
+| No
+| Path to a file containing JSON data to pass into the policy evaluation as additional context.
+Takes precedence over `input-data` when both are provided.
+
+| `checkpoint-type`
+| String
+| No
+| The kind of checkpoint entity being evaluated: `stage`, `workflow`, or `job`.
+
+| `checkpoint-name`
+| String
+| No
+| The name of the checkpoint entity.
+Omit when `checkpoint-type` is `workflow`.
+
+| `checkpoint-position`
+| String
+| No
+| The position within the checkpoint: `entry`, `exit`, or `within`.
+
+|===
+
+== Outputs
+
+[cols="2a,2a,5a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+| `policy-action`
+| String
+| The reconciled action across all evaluated policies.
+Possible values are `CONTINUE`, `REQUEST_APPROVAL`, `BLOCK`, and `ERROR`.
+`BLOCK` and `ERROR` results cause the workflow to exit with a non-zero status.
+`REQUEST_APPROVAL` is handled internally by routing to a manual approval step; the output remains available to callers after approval is granted.
+
+| `review-channel`
+| String
+| The channel type for review. Present only when `policy-action=REQUEST_APPROVAL`.
+
+| `review-recipients`
+| String
+| The recipients for review. Present only when `policy-action=REQUEST_APPROVAL`.
+
+|===
+
+== Usage example
+
+In the YAML file, all values are required, unless otherwise noted.
+
+====
+
+In your YAML file, add:
+
+[source,yaml]
+----
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: my-workflow
+on:
+  workflow_dispatch:
+permissions:
+  scm-token-own: read
+  scm-token-org: read
+  id-token: write
+jobs:
+  build:
+    outputs:
+      scan-results: ${{ steps.scan.outputs.results }}
+    steps:
+      - id: scan
+        name: Run scan
+        # ... your build/scan steps here
+
+  policy-evaluation:
+    uses: cloudbees-io/policy-utils/evaluate-policy-context/workflow.yml@v1.2
+    needs:
+      - build
+    with:
+      input-data: ${{ needs.build.outputs.scan-results }}
+      checkpoint-type: job
+      checkpoint-name: build
+      checkpoint-position: exit
+
+  deploy:
+    needs:
+      - policy-evaluation
+    steps:
+      - name: Deploy
+        # ... steps that run only after policy context evaluation passes
+----
+
+====
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-unify/latest/actions[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-unify/latest/[the CloudBees platform].
