@@ -105,9 +105,8 @@ jobs:
       - build
     with:
       input-data: ${{ needs.build.outputs.scan-results }}
-      checkpoint-type: job
-      checkpoint-name: build
-      checkpoint-position: exit
+      checkpoint-type: workflow
+      checkpoint-position: within
 
   deploy:
     needs:
