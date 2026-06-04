@@ -1,0 +1,59 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: policy-context-check
+on:
+  workflow_call:
+    inputs:
+      input-data:
+        description: Input context data for rule evaluation
+        type: string
+        required: false
+      input-file:
+        description: Path to a file containing input context data for rule evaluation
+        type: string
+        required: false
+      checkpoint-type:
+        description: "Checkpoint entity kind: stage, workflow, or job"
+        type: string
+        required: false
+      checkpoint-name:
+        description: Checkpoint entity name (omit when checkpoint-type is workflow)
+        type: string
+        required: false
+      checkpoint-position:
+        description: "Position within the checkpoint: entry, exit, or within"
+        type: string
+        required: false
+permissions:
+  scm-token-own: read
+  scm-token-org: read
+  id-token: write
+jobs:
+  evaluate:
+    outputs:
+      policy-action: ${{ steps.policy-context-check.outputs.action }}
+      review-channel: ${{ steps.policy-context-check.outputs.review-channel }}
+      review-recipients: ${{ steps.policy-context-check.outputs.review-recipients }}
+      review-timeout-minutes: ${{ steps.policy-context-check.outputs.review-timeout-minutes }}
+    steps:
+      - name: Run policy context check
+        id: policy-context-check
+        uses: cloudbees-io/policy-check/actions/evaluate-policy-context@v1.2
+        with:
+          input-data: ${{ inputs.input-data }}
+          input-file: ${{ inputs.input-file }}
+          checkpoint-type: ${{ inputs.checkpoint-type }}
+          checkpoint-name: ${{ inputs.checkpoint-name }}
+          checkpoint-position: ${{ inputs.checkpoint-position }}
+
+  request-approval:
+    needs: evaluate
+    if: needs.evaluate.outputs.policy-action == 'REQUEST_APPROVAL'
+    with:
+      instructions: >-
+        Policy context evaluation requires manual approval before this workflow
+        can proceed. Approvers: ${{ needs.evaluate.outputs.review-recipients }}.
+      approvers: ${{ needs.evaluate.outputs.review-recipients }}
+      disallowLaunchByUser: "false"
+    delegates: cloudbees-io/manual-approval/custom-job.yml@v1
+    #timeout-minutes: ${{ needs.evaluate.outputs.review-timeout-minutes }}
