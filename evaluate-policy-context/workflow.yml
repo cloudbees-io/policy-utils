@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Run policy context check
         id: policy-context-check
-        uses: cloudbees-io/policy-check/actions/evaluate-policy-context@v1.2
+        uses: cloudbees-io/policy-check/actions/evaluate-policy-context@v1.2.1
         with:
           input-data: ${{ inputs.input-data }}
           input-file: ${{ inputs.input-file }}
