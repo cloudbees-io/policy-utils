@@ -11,7 +11,7 @@ A collection of utilities for working with CloudBees policies.
 | Description
 
 | link:evaluate-policy/README.adoc[evaluate-policy]
-| Reusable workflow that evaluates a policy and automatically routes `REQUEST_APPROVAL` results to a manual approval step.
+| Reusable workflow that evaluates a policy and automatically routes `REVIEW` results to a manual approval step.
 
 |===
 

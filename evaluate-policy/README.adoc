@@ -2,7 +2,7 @@
 
 Use this reusable workflow to evaluate a policy and automatically route results to a manual approval flow when required.
 
-The workflow runs the policy check and, if the result is `REQUEST_APPROVAL`, delegates to the CloudBees manual approval workflow before allowing the calling workflow to proceed.
+The workflow runs the policy check and, if the result is `REVIEW`, delegates to the CloudBees manual approval workflow before allowing the calling workflow to proceed.
 
 == Inputs
 
@@ -46,17 +46,17 @@ Takes precedence over `input-data` when both are provided.
 | `policy-action`
 | String
 | The action determined by policy evaluation.
-Possible values are `CONTINUE`, `REQUEST_APPROVAL`, `BLOCK`, and `ERROR`.
+Possible values are `CONTINUE`, `REVIEW`, `BLOCK`, and `ERROR`.
 `BLOCK` and `ERROR` results cause the workflow to exit with a non-zero status.
-`REQUEST_APPROVAL` is handled internally by routing to a manual approval step; the output remains available to callers after approval is granted.
+`REVIEW` is handled internally by routing to a manual approval step; the output remains available to callers after approval is granted.
 
 | `review-channel`
 | String
-| The channel type for review. Present only when `policy-action=REQUEST_APPROVAL`.
+| The channel type for review. Present only when `policy-action` is `REVIEW`.
 
 | `review-recipients`
 | String
-| The recipients for review. Present only when `policy-action=REQUEST_APPROVAL`.
+| The recipients for review. Present only when `policy-action` is `REVIEW`.
 
 |===
 

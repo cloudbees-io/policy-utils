@@ -48,7 +48,11 @@ jobs:
 
   request-approval:
     needs: evaluate
-    if: needs.evaluate.outputs.policy-action == 'REQUEST_APPROVAL'
+    # Match both the canonical REVIEW action and the legacy REQUEST_APPROVAL name
+    # so the approval flow keeps firing across the action rename rollout (CBP-47622).
+    # DEPRECATED: REQUEST_APPROVAL is retained only for backwards compatibility and
+    # will be removed in a future release once all policies use REVIEW.
+    if: needs.evaluate.outputs.policy-action == 'REVIEW' || needs.evaluate.outputs.policy-action == 'REQUEST_APPROVAL'
     with:
       instructions: >-
         Policy context evaluation requires manual approval before this workflow
