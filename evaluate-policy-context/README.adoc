@@ -100,7 +100,7 @@ jobs:
         # ... your build/scan steps here
 
   policy-evaluation:
-    uses: cloudbees-io/policy-utils/evaluate-policy-context/workflow.yml@v1.2
+    uses: cloudbees-io/policy-utils/evaluate-policy-context/workflow.yml@v2
     needs:
       - build
     with:
