@@ -10,10 +10,28 @@ A collection of utilities for working with CloudBees policies.
 | Utility
 | Description
 
-| link:evaluate-policy/README.adoc[evaluate-policy]
-| Reusable workflow that evaluates a policy and automatically routes `REVIEW` results to a manual approval step.
+| link:evaluate-policy-context/README.adoc[evaluate-policy-context]
+| Reusable workflow that discovers and evaluates all policies applicable to the current workflow context, and automatically routes `REVIEW` results to a manual approval step.
 
 |===
+
+== Usage
+
+Call `evaluate-policy-context` from your workflow to evaluate all policies that match the current checkpoint.
+The workflow resolves `REVIEW` results to a manual approval step automatically.
+
+[source,yaml]
+----
+policy-exit:
+  needs: [scan-job]
+  uses: cloudbees-io/policy-utils/evaluate-policy-context/workflow.yml@v2
+  with:
+    checkpoint-type: job
+    checkpoint-name: scan-job
+    checkpoint-position: exit
+----
+
+See link:evaluate-policy-context/README.adoc[evaluate-policy-context/README.adoc] for the full list of inputs and outputs.
 
 == References
 
